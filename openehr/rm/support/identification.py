@@ -8,7 +8,7 @@
 import re
 import inspect
 
-from openehr.rm import RMObject, Attribute
+from openehr.rm import RMObject
 
 
 SEPARATOR = u"::"
@@ -51,7 +51,7 @@ class ISO_OID(UID):
     identifier is locally unique.
     """
 
-    def __init__(self, value:Attribute(name='value', required=True)):
+    def __init__(self, value):
         super(ISO_OID, self).__init__(value)
         numbers_parts = self.value.split(".")
         for part in numbers_parts:
@@ -77,7 +77,7 @@ class UUID(UID):
 
     __UUID_RE = re.compile("([0-9a-fA-F])+(-([0-9a-fA-F])+)*")
 
-    def __init__(self, value:Attribute(name='value', required=True)):
+    def __init__(self, value):
         if not self.__UUID_RE.match(value):
             raise InvalidUID("Invalid UUID format. [%s]" % value)
         super(UUID,self).__init__(value)
@@ -96,7 +96,7 @@ class InternetID(UID):
                            r'(\.[a-zA-Z]([a-zA-Z0-9-]*[a-zA-Z0-9]))+\Z'))
 
 
-    def __init__(self, value:Attribute(name='value', required=True)):
+    def __init__(self, value):
         if not self.__IETF_RE.match(value):
             raise InvalidUID("Invalid Internet Domain. [%s]" % value)
         super(InternetID,self).__init__(value)
@@ -138,7 +138,7 @@ class UIDMatcher(object):
         for factory in uid_factories:
             try:
                 self.uid_obj = factory(value)
-            except InvalidUID as e:
+            except InvalidUID:
                 continue
             if self.uid_obj: break
         if self.uid_obj is None:
@@ -158,8 +158,7 @@ class UIDBasedID(ObjectID):
     """
     _uid = None
 
-    def __init__(self, uid:Attribute(name='value', required=True), 
-        extension:Attribute(name='extension', required=False) = None):
+    def __init__(self, uid, extension=None):
         value = u""
         if isinstance(uid, UID):
             self._uid = uid
@@ -236,7 +235,12 @@ class ObjectVersionID(UIDBasedID):
     root_part = None
     extension_part = None
 
-    def __init__(self, value:Attribute(name='value', required=True)):
+    def __init__(self, value, creatingSystemId=None, versionTreeId=None):
+
+        if (type(value) == str and type(creatingSystemId) == str and
+                type(versionTreeId) == str):
+            value = SEPARATOR.join([value, creatingSystemId, versionTreeId])
+
         super(ObjectVersionID, self).__init__(value)
 
         splits = value.split(SEPARATOR)
@@ -254,10 +258,10 @@ class ObjectVersionID(UIDBasedID):
 
         if segments == 4:
             self.__creating_system_id = HierObjectID(SEPARATOR.join(splits[1:3]))
-            self.__version_tree_id = VersionTreeId(splits[3])
+            self.__version_tree_id = VersionTreeID(splits[3])
         else:
             self.__creating_system_id = HierObjectID(splits[1])
-            self.__version_tree_id = VersionTreeId(splits[2])
+            self.__version_tree_id = VersionTreeID(splits[2])
 
         self.root_part = self.object_id
         self.extension_part = SEPARATOR.join((self.__creating_system_id.value, self.__version_tree_id.value,))
@@ -295,7 +299,7 @@ class TerminologyID(ObjectID):
             self.__version = parts[2].rstrip(')')
         else:
             self.__name, self.__version = name, version
-            name = '%s(%s)' % (name, value)
+            name = '%s(%s)' % (name, version)
         self.value = name
         super(TerminologyID,self).__init__(name)
 
@@ -321,8 +325,7 @@ class VersionTreeID(object):
     __branch_version = None
     __trunk_version = None
 
-    def __init__(self, value:Attribute(name='value', required=True),
-        branchNo=None, branchV=None):
+    def __init__(self, value, branchNo=None, branchV=None):
         """
             Take either 3 values or one value in format x.y.z.
         """
@@ -385,7 +388,7 @@ class VersionTreeID(object):
         return self.__trunk_version == '1' and (not self.is_branch())
 
     def __eq__(self, other):
-        if not isinstance(other, VersionTreeId):
+        if not isinstance(other, VersionTreeID):
             return False
         return self.value == other.value
 
@@ -414,7 +417,7 @@ class ArchetypeID(ObjectID):
                 self.__AXIS_SEPARATOR, versionID or ''])
     
 
-    def __init__(self, value:Attribute(name='value', required=True),
+    def __init__(self, value,
         rmName=None, rmEntity=None, conceptName=None, specialisation=None, versionID=None):
         if rmName != None:
             rmOriginator = value
@@ -536,8 +539,7 @@ class GenericID(ObjectID):
         (which may well be local).
     """
     scheme = None
-    def __init__(self, value:Attribute(name='value', required=True),
-        scheme:Attribute(name='scheme', required=True)):
+    def __init__(self, value, scheme):
         self.scheme=scheme
         super(GenericID,self).__init__(value)
 
@@ -654,7 +656,7 @@ class LocatableRef(ObjectRef):
         return str('/'.join(['ehr:/', self.id.value,path_str]))
 
     def __eq__(self, other):
-        if ILocatableRef.providedBy(other):
+        if isinstance(LocatableRef, other):
             return hash(self) == hash(other)
 
     def __hash__(self):
@@ -679,7 +681,7 @@ class PartyRef(ObjectRef):
             is_party_instance = 'Party' in super_class_names
             is_actor_instance = 'Actor' in super_class_names
             type_ = party_object.__class__.__name__
-            is_a_valid_type = partyref_type_is_valid(type_)
+            is_a_valid_type = self.partyref_type_is_valid(type_)
             if is_actor_instance and is_party_instance and not is_a_valid_type :
                 type_ = u'ACTOR'
             elif is_party_instance and not is_a_valid_type:
@@ -689,5 +691,14 @@ class PartyRef(ObjectRef):
             else: raise ValueError("The object must be a Party object.")
             id_ = party_object.uid
         super(PartyRef,self).__init__(id_,namespace,type_,)
+
+    def partyref_type_is_valid(self, type_):
+        return True if type_.upper() in [u'PERSON',
+                                  u'ORGANISATION',
+                                  u'GROUP',
+                                  u'AGENT',
+                                  u'ROLE',
+                                  u'PARTY',
+                                  u'ACTOR'] else False
 
 
