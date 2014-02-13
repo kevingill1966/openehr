@@ -303,11 +303,9 @@ class TerminologyID(ObjectID):
         self.value = name
         super(TerminologyID,self).__init__(name)
 
-    @property
     def name(self):
         return self.__name
 
-    @property
     def version_id(self):
         return self.__version
 
@@ -369,15 +367,12 @@ class VersionTreeID(object):
             if branchV != branchNo:
                 raise ValueError('breach of branch_validity')
 
-    @property
     def trunk_version(self):
         return self.__trunk_version
 
-    @property
     def branch_number(self):
         return self.__branch_number
 
-    @property
     def branch_version(self):
         return self.__branch_version
 
@@ -391,6 +386,9 @@ class VersionTreeID(object):
         if not isinstance(other, VersionTreeID):
             return False
         return self.value == other.value
+
+    def __str__(self):
+        return self.value
 
 
 class ArchetypeID(ObjectID):

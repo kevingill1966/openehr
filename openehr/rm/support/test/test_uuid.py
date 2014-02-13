@@ -4,5 +4,5 @@ import unittest
 
 class TestUUID(unittest.TestCase):
     def testConstructorTakeString(self):
-        self.assertNotEqual(identification.UUID("12888888-1444-1444-1244-15cccccccccc"), None)
+        self.assertNotEqual(identification.UUID("128-1-1-12-15"), None)
 
