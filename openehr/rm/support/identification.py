@@ -296,7 +296,7 @@ class TerminologyID(ObjectID):
         if version == None:
             parts = name.partition('(')
             self.__name = parts[0]
-            self.__version = parts[2].rstrip(')')
+            self.__version = parts[2].rstrip(')') or None
         else:
             self.__name, self.__version = name, version
             name = '%s(%s)' % (name, version)
@@ -341,21 +341,22 @@ class VersionTreeID(object):
                 self.__validate_values(int(entries[0]),
                                        int(entries[1]),
                                        int(entries[2]))
-                self.__trunkVersion = entries[0]
+                self.__trunk_version = entries[0]
                 # never set branchNo or branchV to 0
                 if int(entries[1]) > 0:
-                    self.__branchNumber = entries[1]
-                    self.__branchVersion = entries[2]
+                    self.__branch_number = entries[1]
+                    self.__branch_version = entries[2]
                     self.value = value
                 else:
                     self.value = entries[0]
         else:
             self.__validate_values(value, branchNo, branchV)
-            self.value = self.__trunkVersion = value
+            self.value = self.__trunk_version = str(value)
             if int(branchNo) > 0:
                 # never set branchNo or branchV to 0
-                self.__branchNumber = branchNo
-                self.__branchVersion = branchV
+                self.__branch_number = str(branchNo)
+                self.__branch_version = str(branchV)
+                self.value = self.value + '.' + str(branchNo) + '.' + str(branchV)
 
     def __validate_values(self, trunk, branchNo, branchV):
         if (trunk < 1) or (branchNo < 0) or (branchV < 0):
@@ -388,7 +389,7 @@ class VersionTreeID(object):
         return self.value == other.value
 
     def __str__(self):
-        return self.value
+        return str(self.value)
 
 
 class ArchetypeID(ObjectID):
@@ -497,19 +498,19 @@ class ArchetypeID(ObjectID):
 
     @property
     def concept_name(self):
-        return self.__concept_name or ''
+        return self.__concept_name
 
     @property
     def rm_originator(self):
-        return self.__rm_originator or ''
+        return self.__rm_originator
 
     @property
     def rm_name(self):
-        return self.__rm_name or ''
+        return self.__rm_name
 
     @property
     def rm_entity(self):
-        return self.__rm_entity or ''
+        return self.__rm_entity
 
     @property
     def specialisation(self):
@@ -526,8 +527,8 @@ class ArchetypeID(ObjectID):
         """
         return ''.join([
             self.__SECTION_SEPARATOR.join(
-                [self.rm_originator, self.rm_name, self.rm_entity]),
-            self.__AXIS_SEPARATOR, self.domain_concept ])
+                [self.rm_originator or '', self.rm_name or '', self.rm_entity or '']),
+            self.__AXIS_SEPARATOR, self.domain_concept or ''])
 
 
 class GenericID(ObjectID):
@@ -595,7 +596,12 @@ class ObjectRef(RMObject):
         Hash method necessary to include the
         object itself in a set collection. 
         """
-        return hash(self.id.value)
+        rv = hash(self.id.value)
+        if self.namespace_:
+            rv = rv+ hash(self.namespace_)
+        if self.type_:
+            rv = rv+ hash(self.type_)
+        return rv
 
     @property
     def id(self):
