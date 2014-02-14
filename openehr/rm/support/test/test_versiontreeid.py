@@ -38,10 +38,10 @@ class TestVersionTreeID(unittest.TestCase):
             [1, -2, 2]
         ]
         for value in values:
-            with self.assertRaises(InvalidUID):
+            with self.assertRaises(ValueError):
                 VersionTreeID(value)
         for int_value in intS:
-            with self.assertRaises(InvalidUID):
+            with self.assertRaises(ValueError):
                 VersionTreeID(*int_value)
     
     def testIsFirst(self):
@@ -49,13 +49,13 @@ class TestVersionTreeID(unittest.TestCase):
         values = ["1", "1.0.0", "1.1.1", "2"]
         iF = [True, True, False, False]
         for i in range(len(values)):
-            self.assertEquals(iF[i], VersionTreeID(values[i]).is_first())
+            self.assertEqual(iF[i], VersionTreeID(values[i]).is_first())
 
     def testNext(self):
         values = ["1", "1.0.0", "1.1.1", "2"]
         nextV = ["2", "2", "1.1.2", "3"]
         for i in range(len(values)):
-            self.assertEquals(VersionTreeID(nextV[i]), VersionTreeID(values[i]).is_first())
+            self.assertEqual(VersionTreeID(nextV[i]), VersionTreeID(values[i]).next())
 
     def testToString(self):
         intS = [

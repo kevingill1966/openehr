@@ -2,7 +2,7 @@ from openehr.rm.support.identification import (ObjectVersionID, ISO_OID, HierObj
     VersionTreeID, UUID, InternetID)
 import unittest
 
-class TestArchetypeID(unittest.TestCase):
+class TestVersionID(unittest.TestCase):
 
     def testContructorTakeString1(self):
         idsets = [
@@ -31,9 +31,9 @@ class TestArchetypeID(unittest.TestCase):
 
     def testContructorTakeString3(self):
         idsets = [
-            ["openehr", "1.2.840.114.1.2.2", "1"],
+            ["openehr.com", "1.2.840.114.1.2.2", "1"],
             ["openehrR1-0.org", "7234-235-422-4-23::23", "2.0.0"],
-            #{"openehr.org.uk", "w123.55.155::ext1", "2.1.2"}
+            ["openehr.org.uk", "123.55.155::ext1", "2.1.2"]
         ]
         for i, idset in enumerate(idsets):
             ov = ObjectVersionID(idset[0], idset[1], idset[2])

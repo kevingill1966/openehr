@@ -31,7 +31,7 @@ class UID(object):
         self.value = str(value)
 
     def __eq__(self, other):
-        if not isinstance(other, self.__class__):
+        if not isinstance(other, UID):
             return False
         return self.value == other.value
 
@@ -279,6 +279,7 @@ class ObjectVersionID(UIDBasedID):
         return self.__version_tree_id.is_branch()
 
 
+
 class TemplateID(ObjectID):
     """
         Identifier for templates. Lexical form to be determined.
@@ -350,6 +351,9 @@ class VersionTreeID(object):
                 else:
                     self.value = entries[0]
         else:
+            value = int(value)
+            branchNo = int(branchNo)
+            branchV = int(branchV)
             self.__validate_values(value, branchNo, branchV)
             self.value = self.__trunk_version = str(value)
             if int(branchNo) > 0:
@@ -382,6 +386,18 @@ class VersionTreeID(object):
 
     def is_first(self):
         return self.__trunk_version == '1' and (not self.is_branch())
+
+    def next(self):
+        """
+            This appears not to be part of the spec, but it is implemented
+            in the java version and is needed to pass the unit tests.
+        """
+        if self.is_branch():
+            return VersionTreeID(self.trunk_version(),
+                    self.branch_number(),
+                    str(int(self.branch_version()) + 1))
+        else:
+            return VersionTreeID(str(int(self.trunk_version()) + 1))
 
     def __eq__(self, other):
         if not isinstance(other, VersionTreeID):

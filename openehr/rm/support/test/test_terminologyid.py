@@ -22,16 +22,16 @@ class TestTerminologyID(unittest.TestCase):
     def testConstrcutorTakesStringValue(self):
         for i, s in enumerate(STRING_VALUE):
             tid = TerminologyID(s)
-            self.assertEquals(s, tid.value)
-            self.assertEquals(SECTIONS[i][0], tid.name())
-            self.assertEquals(SECTIONS[i][1], tid.version_id())
+            self.assertEqual(s, tid.value)
+            self.assertEqual(SECTIONS[i][0], tid.name())
+            self.assertEqual(SECTIONS[i][1], tid.version_id())
 
     def testConstrcutorTakesNameVersion(self):
         for i, s in enumerate(STRING_VALUE):
             tid = TerminologyID(SECTIONS[i][0], SECTIONS[i][1])
-            self.assertEquals(s, tid.value)
-            self.assertEquals(SECTIONS[i][0], tid.name())
-            self.assertEquals(SECTIONS[i][1], tid.version_id())
+            self.assertEqual(s, tid.value)
+            self.assertEqual(SECTIONS[i][0], tid.name())
+            self.assertEqual(SECTIONS[i][1], tid.version_id())
     
     def testEquals(self):
         id1 = TerminologyID("ICD9", "1999")
