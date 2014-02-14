@@ -1,5 +1,12 @@
 # -*- coding: utf-8 -*-
 
+"""
+    Trivial implementation of the Measurement service defined in the spec.
+
+    Don't see any services implemented in oship. Class does not seem to 
+    be implemented in the java lib at all.
+"""
+
 #--------------------------------------------------------------
 # Injection Approach
 MEASUREMENT_INFO_SERVICES = []
