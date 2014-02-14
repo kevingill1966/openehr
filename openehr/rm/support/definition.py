@@ -1,7 +1,18 @@
 
-class OpenehrDefinitions:
+"""
+The definition package, illustrated in FIGURE 8, defines symbolic definitions used by the
+openEHR models. Only a small number are currently defined.
+"""
+
+class BASIC_DEFINITIONS:
     """
-        Defines an object providing proxy access to a measurement information service.
+        Inheritance class to provide access to constants defined in other packages.
     """
-    CR = '\015';
-    LF = '\012';
+    CR = '\015'
+    LF = '\012'
+
+class OPENEHR_DEFINITIONS(BASIC_DEFINITIONS):
+    """
+        Defines globally used constant values.
+    """
+    pass
