@@ -11,13 +11,13 @@
 """
     This code is taken oship.
 
-    Support Information Model Rev.
+    Support Information Model Rev. 1.0.2
 """
 
 __author__ = u'Timothy Cook <timothywayne.cook@gmail.com>'
 __docformat__ = u'plaintext'
 __contributors__ = (u'Fabricio Ferracioli <fabricioferracioli@gmail.com>',
- u'Sergio Miranda Freire <sergio@lampada.uerj.br>')
+    u'Sergio Miranda Freire <sergio@lampada.uerj.br>')
 
 
 import calendar
@@ -132,57 +132,13 @@ class Interval(object):
 
         """Initializes an interval
 
-      Parameters ========== - lower: The lower bound of an interval
-      (default Smallest()) - upper: The upper bound of an interval
-      (default Largest()) - lower_included: Boolean telling if the
-      lower value of interval are included (default True).  -
-      upper_included: Boolean telling if the greater value of interval
-      are included (default True)
-
-      An Interval can represent an infinite set.
-
-      >>> r = Interval() # All values
-      >>> r.has(0)
-      True
-
-      An Interval can represent sets unbounded on an end.
-
-      >>> r = Interval(0,5)
-      >>> r.has(-1)
-      True
-      >>> r.has(3)
-      True
-      >>> r.has(5.1)
-      False
-
-      An Interval can represent a set of values up to, but not including a
-      value.
-
-      >>> r = Interval(25, 28, False)
-      >>> r.has(25)
-      False
-      >>> r.has(28)
-      True
-
-      An Interval can represent a set of values that have an inclusive
-      boundary.
-
-      >>> r = Interval(29, 216)
-
-      An Interval can represent a single value
-
-      >>> r = Interval(82, 82)
-      >>> r.has(82)
-      True
-
-      Intervals that are not normalized, gives an exception.
-
-      >>> r = Interval(4, 1)
-
-      Intervals can represent an empty set.
-
-      >>> r = Interval(5, 5, False, False)
-      """
+          Parameters ========== - lower: The lower bound of an interval
+          (default Smallest()) - upper: The upper bound of an interval
+          (default Largest()) - lower_included: Boolean telling if the
+          lower value of interval are included (default True).  -
+          upper_included: Boolean telling if the greater value of interval
+          are included (default True)
+        """
         if (lower is None or upper is None):
             raise ValueError('lower and upper must not be None')
 
@@ -220,9 +176,9 @@ class Interval(object):
 
     def __hash__(self):
         """
-        Returns a hashed value of the object
-        Intervals are to be considered immutable.  Thus, a 32-bit hash can
-        be generated for them.
+            Returns a hashed value of the object
+            Intervals are to be considered immutable.  Thus, a 32-bit hash can
+            be generated for them.
         """
         return hash((self.lower_unbounded, self.upper_unbounded, 
                      self.lower, self.upper, self.lower_included, self.upper_included))
@@ -234,7 +190,7 @@ class Interval(object):
 
     def __repr__(self):
         """
-        Returns an evaluable expression that can reproduce the object
+            Returns an evaluable expression that can reproduce the object
         """
         return "Interval(lower=%s, upper=%s, lower_unbounded=%s, upper_unbounded=%s, \
         lower_included=%s, upper_included=%s)" % (repr(self.lower), repr(self.upper), \
@@ -243,14 +199,8 @@ class Interval(object):
 
     def has(self, value):
         """
-    Returns if a value is inside the interval
-    >>> interval = Interval(0,2)
-    >>> interval.has(4)
-    False
-    >>> interval.has(1.5)
-    True
-
-    """
+            Returns if a value is inside the interval
+        """
 
         if (value is None):
             raise ValueError('value must not be None')
