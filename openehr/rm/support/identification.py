@@ -415,7 +415,8 @@ class ArchetypeID(ObjectID):
 
     __AXIS_SEPARATOR = u'.'
     __SECTION_SEPARATOR = u'-'
-    __NAME_PATTERN = re.compile(r"[a-zA-Z][a-zA-Z0-9()_/%$#&]*")
+    # Note - I weakened this validation from the oship implementation
+    __NAME_PATTERN = re.compile(r"[a-zA-Z][a-zA-Z0-9()_/%$#&\.-]*")
     __VERSION_PATTERN = re.compile(r"[a-zA-Z0-9]+")
 
     __qualified_rm_entity = __domain_concept = __version = None
@@ -458,8 +459,10 @@ class ArchetypeID(ObjectID):
                 self.__validate_version_id(self.__version)
             self.__validate_name(self.__rm_originator, 'rm_originator')
             self.__validate_name(self.__rm_name,'rm_name')
-            self.__validate_name(self.__rm_entity, 'rm_entity')
-            self.__validate_name(self.__conceptName, 'concept_name')
+            if self.__rm_entity != None:
+                self.__validate_name(self.__rm_entity, 'rm_entity')
+            if self.__conceptName != None:
+                self.__validate_name(self.__conceptName, 'concept_name')
 
         else:
             super(ArchetypeID,self).__init__(value)
@@ -509,30 +512,24 @@ class ArchetypeID(ObjectID):
         return self.__qualified_rm_entity
 
     @property
-    def domain_concept(self):
-        return self.__domain_concept
-
-    @property
     def concept_name(self):
         return self.__concept_name
 
-    @property
+    def domain_concept(self):
+        return self.__domain_concept
+
     def rm_originator(self):
         return self.__rm_originator
 
-    @property
     def rm_name(self):
         return self.__rm_name
 
-    @property
     def rm_entity(self):
         return self.__rm_entity
 
-    @property
     def specialisation(self):
         return self.__specialisation
 
-    @property
     def version_id(self):
         return self.__version
 
@@ -543,9 +540,13 @@ class ArchetypeID(ObjectID):
         """
         return ''.join([
             self.__SECTION_SEPARATOR.join(
-                [self.rm_originator or '', self.rm_name or '', self.rm_entity or '']),
-            self.__AXIS_SEPARATOR, self.domain_concept or ''])
+                [self.rm_originator() or '', self.rm_name() or '', self.rm_entity() or '']),
+            self.__AXIS_SEPARATOR, self.domain_concept() or ''])
 
+    def __eq__(self, other):
+        if not isinstance(other, ArchetypeID):
+            return False
+        return self.base == other.base
 
 class GenericID(ObjectID):
     """

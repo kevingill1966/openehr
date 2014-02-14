@@ -58,20 +58,20 @@ class TestArchetypeID(unittest.TestCase):
         base2 = "openehr-ehr_rm-section.simple_medication."
 
         # same base
-        self.assertEqual(identification.ArchetypeID(base1, "v1"),
-            identification.ArchetypeID(base1, "v1"))
-        self.assertEqual(identification.ArchetypeID(base1, "v1"),
-            identification.ArchetypeID(base1, "v2"))
-        self.assertEqual(identification.ArchetypeID(base1, "v2"),
-            identification.ArchetypeID(base1, "v1"))
+        self.assertEqual(identification.ArchetypeID(base1 + "v1"),
+            identification.ArchetypeID(base1 + "v1"))
+        self.assertEqual(identification.ArchetypeID(base1 + "v1"),
+            identification.ArchetypeID(base1 + "v2"))
+        self.assertEqual(identification.ArchetypeID(base1 + "v2"),
+            identification.ArchetypeID(base1 + "v1"))
 
         # different base
-        self.assertNotEqual(identification.ArchetypeID(base1, "v1"),
-            identification.ArchetypeID(base2, "v1"))
-        self.assertNotEqual(identification.ArchetypeID(base1, "v1"),
-            identification.ArchetypeID(base2, "v2"))
-        self.assertNotEqual(identification.ArchetypeID(base1, "v2"),
-            identification.ArchetypeID(base2, "v1"))
+        self.assertNotEqual(identification.ArchetypeID(base1 + "v1"),
+            identification.ArchetypeID(base2 + "v1"))
+        self.assertNotEqual(identification.ArchetypeID(base1 + "v1"),
+            identification.ArchetypeID(base2 + "v2"))
+        self.assertNotEqual(identification.ArchetypeID(base1 + "v2"),
+            identification.ArchetypeID(base2 + "v1"))
 
 
     def testBase(self):
@@ -81,7 +81,7 @@ class TestArchetypeID(unittest.TestCase):
     def testMultipleSpecialisation(self):
         aid = identification.ArchetypeID("openEHR-EHR-CLUSTER.exam-generic-joint.v1")
         sp = ["generic","joint"]            
-        self.assertEqual(sp, aid.specialisation)
+        self.assertEqual(sp, aid.specialisation())
 
     def testWithConceptInSwedish(self):
         #/ Omvrdnadsanteckning
