@@ -8,7 +8,16 @@ from inspect import getmembers
 from abc import ABCMeta, abstractmethod
 from openehr.rm.support.identification import TerminologyID
 
-OPENEHR_TERMINOLOGY_FILEPATH = os.path.join(os.path.dirname(__file__),"terminology.xml")
+try:
+    OPENEHR_TERMINOLOGY_DIRECTORY = os.environ['OPENEHR_TERMINOLOGY_DIRECTORY']
+except:
+    OPENEHR_TERMINOLOGY_DIRECTORY = os.path.join(os.path.dirname(__file__), "resources")
+
+try:
+    OPENEHR_TERMINOLOGY_LANGUAGE = os.environ['OPENEHR_TERMINOLOGY_LANGUAGE']
+except:
+    OPENEHR_TERMINOLOGY_LANGUAGE = 'en'
+
 
 #----------------------------------------------------------------------------------------
 #  INJECTION
@@ -88,7 +97,6 @@ class TerminologyAccess(metaclass=ABCMeta):
 
 class OpenEHRCodeSetIdentifiers(object):
 
-
     CODE_SET_ID_CHARACTER_SETS=u'character sets'
     CODE_SET_ID_COMPRESSION_ALGORITHMS=u'compression algorithms'
     CODE_SET_ID_COUNTRIES=u'countries'
@@ -96,7 +104,6 @@ class OpenEHRCodeSetIdentifiers(object):
     CODE_SET_ID_LANGUAGES=u'languages'
     CODE_SET_ID_MEDIA_TYPES=u'media types'
     CODE_SET_ID_NORMAL_STATUSES=u'normal statuses'
-
 
     def valid_code_set_id(self, an_id):
         u"""
@@ -109,20 +116,19 @@ class OpenEHRCodeSetIdentifiers(object):
 
 class OpenEHRTerminologyGroupIdentifiers(object):
 
-
     TERMINOLOGY_ID=u'openehr'
-    GROUP_ID_AUDIT_CHANGE_TYPE=u'audit change type'
     GROUP_ID_ATTESTATION_REASON=u'attestation reason'
+    GROUP_ID_AUDIT_CHANGE_TYPE=u'audit change type'
     GROUP_ID_COMPOSITION_CATEGORY=u'composition category'
     GROUP_ID_EVENT_MATH_FUNCTION=u'event math function'
-    GROUP_ID_ISM_STATES=u'instruction states'
-    GROUP_ID_ISM_TRANSITIONS=u'instruction transitions'
+    GROUP_ID_INSTRUCTION_STATES=u'instruction states'
+    GROUP_ID_INSTRUCTION_TRANSITIONS=u'instruction transitions'
     GROUP_ID_NULL_FLAVOURS=u'null flavours'
-    GROUP_ID_MEASURABLE_PROPERTIES=u'property'
     GROUP_ID_PARTICIPATION_FUNCTION=u'participation function'
     GROUP_ID_PARTICIPATION_MODE=u'participation mode'
-    GROUP_ID_RELATED_PARTY_RELATIONSHIP=u'related party relationship'
+    GROUP_ID_PROPERTIES=u'property'
     GROUP_ID_SETTING=u'setting'
+    GROUP_ID_SUBJECT_RELATIONSHIP=u'subject relationship'
     GROUP_ID_TERM_MAPPING_PURPOSE=u'term mapping purpose'
     GROUP_ID_VERSION_LIFECYCLE_STATE=u'version lifecycle state'
 
@@ -137,7 +143,7 @@ class CodeSetServiceMixIn(OpenEHRCodeSetIdentifiers):
         Defines an object providing proxy access to codeset services. Published
         as TerminologyService.
 
-        Codesets are injected into the AVAILABLE_CODE_SETS dictionary via run-time
+        Codesets are injected into the AVAILABLE_CODE_SET dictionary via run-time
         implementation.
     """
 
@@ -145,7 +151,7 @@ class CodeSetServiceMixIn(OpenEHRCodeSetIdentifiers):
         codeset_access = None
         if name is not None and name != '':
             external_name = name if not self.valid_code_set_id(name) else self.openehr_code_sets()[name]
-            codeset_access = AVAILABLE_CODE_SETS.get(external_name, None)
+            codeset_access = AVAILABLE_CODE_SET.get(external_name, None)
         if codeset_access is None:
             raise ValueError('Code Set not found by the identifier specified. [%s]' % name)
         return codeset_access
@@ -156,7 +162,7 @@ class CodeSetServiceMixIn(OpenEHRCodeSetIdentifiers):
         """
         if id_ is not None and self.valid_code_set_id(id_):
             external_name = self.openehr_code_sets()[id_]
-            codeset_access = AVAILABLE_CODE_SETS.get(external_name, None)
+            codeset_access = AVAILABLE_CODE_SET.get(external_name, None)
             if codeset_access is None:
                 raise ValueError('Code Set not found by the identifier specified. [%s]' % id_)
             return codeset_access
@@ -167,13 +173,13 @@ class CodeSetServiceMixIn(OpenEHRCodeSetIdentifiers):
     def has_code_set(self, name):
         if name is not None and name != '':
             external_name = name if not self.valid_code_set_id(name) else self.openehr_code_sets()[name]
-            return external_name in AVAILABLE_CODE_SETS
+            return external_name in AVAILABLE_CODE_SET
         raise ValueError('The value is not valid Code Set identifier.')
 
     def openehr_code_sets(self):
         return {
                 self.CODE_SET_ID_LANGUAGES:'ISO_639-1',
-                self.CODE_SET_ID_COUNTRIES:'ISO_3611-1',
+                self.CODE_SET_ID_COUNTRIES:'ISO_3166-1',
                 self.CODE_SET_ID_CHARACTER_SETS:'IANA_character-sets',
                 self.CODE_SET_ID_COMPRESSION_ALGORITHMS:'openehr_compression_algorithms',
                 self.CODE_SET_ID_INTEGRITY_CHECK_ALGORITHMS: 'openehr_integrity_check_algorithms',
@@ -182,7 +188,56 @@ class CodeSetServiceMixIn(OpenEHRCodeSetIdentifiers):
                 }
 
     def code_set_identifiers(self):
-        return [ codesetaccess_obj.id() for codeset_access_obj in  AVAILABLE_CODE_SETS.values() ]
+        return [ codesetaccess_obj.id() for codeset_access_obj in  AVAILABLE_CODE_SET.values() ]
+
+    @classmethod
+    def _bootstrap_codesetservice(cls, root, lang):
+        """
+            Load codesets from the configuration file
+        """
+        class OpenEHRCodeSetAccess(CodeSetAccess):
+            """
+            """
+            _id = None
+            _base_lang = None
+            _codes = None
+            _translations = None
+
+            def __init__(self, codeset, values, descriptions, lang):
+                self._external_id = codeset['external_id']
+                self._openehr_id = codeset['openehr_id']
+                self._issuer = codeset.get('issuer')
+                self._translations = {lang: descriptions}
+                id = TerminologyID(self._external_id)
+                self._codes = [CodePhrase(id, value) for value in values]
+
+            def id(self):
+                return self._external_id
+
+            def all_codes(self):
+                return self._codes
+
+            def has_lang(self, a_lang):
+                if not isinstance(a_lang, CodePhrase):
+                    raise AttributeError('The code is not valid Code identifier.')
+                return a_lang.code_string in self._translations
+
+            def has_code(self, a_code):
+                if not isinstance(a_code, CodePhrase):
+                    raise AttributeError('The code is not valid Code identifier.')
+                return a_code in self._codes
+
+        for codeset_element in root.findall('codeset'):
+            values = []
+            descriptions = {}
+            for code_element in codeset_element.findall('code'):
+                values.append(code_element.attrib['value'])
+                descriptions[code_element.attrib['value']] = code_element.attrib.get('description')
+            
+            openehr_codeset = OpenEHRCodeSetAccess(codeset_element.attrib, values, descriptions, lang)
+            register_codeset(codeset_element.attrib['external_id'], openehr_codeset)
+
+
 
 class TerminologyServiceMixIn(OpenEHRTerminologyGroupIdentifiers):
     """
@@ -203,7 +258,7 @@ class TerminologyServiceMixIn(OpenEHRTerminologyGroupIdentifiers):
         else: raise ValueError("The name is not a valid Terminology identifier.")
 
     def has_terminology(self,name):
-        is_a_term_id = name in self.terminology_identifiers()
+        is_a_term_id = name in self._vsab_terminology_identifiers
         is_a_valid_name = name == self.TERMINOLOGY_ID or name == 'centc251'
         if name is not None and name != '' and (is_a_valid_name or is_a_term_id):
             return name in AVAILABLE_TERMINOLOGY
@@ -213,29 +268,20 @@ class TerminologyServiceMixIn(OpenEHRTerminologyGroupIdentifiers):
         return self._vsab_terminology_identifiers
 
     @classmethod
-    def _bootstrap_terminologyservice(cls, root):
+    def _bootstrap_terminologyservice(cls, root, lang):
         """
-            The XML file terminology.xml contains a set of concepts and terms which may be
+            The XML file en.xml contains a set of concepts and terms which may be
             loaded as per terminology.pdf.
 
-            Concept - defines a term
-            Grouper - defines a terminolgoy
-            GroupedConcept - links a terminolgy to a term 
+           Example::
 
+            <group name="attestation reason">
+                <concept id="240" rubric="signed"/>
+                <concept id="648" rubric="witnessed"/>
+            </group>
 
-           Example
-              <Grouper id="13" ConceptID="248" />
-              <PrimaryRubric Id="248" Language="en" />
-              <Concept Language="en" ConceptID="248" Rubric="Audit change type" />
-              <GroupedConcept GrouperID="13" ChildID="250" />
-              <GroupedConcept GrouperID="13" ChildID="251" />
-              <GroupedConcept GrouperID="13" ChildID="252" />
-              <GroupedConcept GrouperID="13" ChildID="253" />
-              <Concept Language="en" ConceptID="250" Rubric="amendment" />
-              <Concept Language="en" ConceptID="251" Rubric="modification" />
-              <Concept Language="en" ConceptID="252" Rubric="synthesis" />
-              <Concept Language="en" ConceptID="253" Rubric="unknown" />
-
+            TODO: This version is not multi-lingual
+            TODO: This is missing group ids.
         """
         class OpenEHRTerminologyAccess(TerminologyAccess):
             """
@@ -243,26 +289,23 @@ class TerminologyServiceMixIn(OpenEHRTerminologyGroupIdentifiers):
             """
             _id = TerminologyID('openehr')
             _codes = None # CodePhrase objects
-            _groupers = None
+            _groups = None
             _group_names = None
             _concepts = None
 
-            def __init__(self, concepts, groupers):
+            def __init__(self, concepts, groups, lang):
                 """
-                    We are passed in a dict of concepts and groupers.
+                    We are passed in a dict of concepts and groups.
+                    The concept dictionary has conceptid, linked to a language
                 """
                 self._concepts = concepts
 
                 self._codes = [CodePhrase(self._id, conceptid) for conceptid in concepts.keys()]
-                self._groupers = {}
-                self._group_names = {}
-                for groupid, grouper in groupers.items():
-                    self._groupers[groupid] = [CodePhrase(self._id, cid) for cid in grouper['conceptids']]
-                    c = concepts[grouper['ConceptID']]
-                    for lang in c.keys():
-                        if lang not in self._group_names:
-                            self._group_names[lang] = {}
-                        self._group_names[lang][c[lang]['Rubric'].lower()] = groupid, c[lang]['Rubric']
+                self._groups = {}
+                self._group_names = dict([(lang, {})])
+                for name, conceptids in groups.items():
+                    self._groups[name.lower()] = [CodePhrase(self._id, cid) for cid in conceptids]
+                    self._group_names[lang][name.lower()] = name.lower(), name
 
             def id(self):
                 return self._id
@@ -271,66 +314,60 @@ class TerminologyServiceMixIn(OpenEHRTerminologyGroupIdentifiers):
                 return self._codes
 
             def codes_for_group_id(self, group_id):
-                return self._groupers[group_id]
+                return self._groups[group_id]
 
             def has_code_for_group_id(self, group_id, a_code):
-                if group_id in self._groupers:
-                    return a_code in self._groupers[group_id]
+                if not isinstance(a_code, CodePhrase):
+                    raise AttributeError('The code is not valid Code identifier.')
+                if group_id in self._groups:
+                    return a_code in self._groups[group_id]
                 return False
 
             def codes_for_group_name(self, name, lang):
                 if lang in self._group_names:
-                    group_id = self._group_names[lang].get(name.lower())[0]
+                    group_id = self._group_names[lang].get(name.lower())
                     if group_id is not None:
-                        return self.codes_for_group_id(group_id)
+                        return self.codes_for_group_id(group_id[0])
                 return None
 
             def rubric_for_code(self, code, lang):
                 "rubric of given code and language or null if not found"
-                concept = self._concepts.get(code)
+                if not isinstance(code, CodePhrase):
+                    raise AttributeError('The code is not valid Code identifier.')
+                concept = self._concepts.get(code.code_string)
                 if concept and lang in concept:
-                    return concept[lang].get('Rubric')
+                    return concept[lang].get('rubric')
                 return None
 
-        conceptlist = [dict(d.items()) for d in root.findall('{http://openehr.org/Terminology.xsd}Concept')]
+        groups = {}
         concepts = {}
-        for c in conceptlist:
-            cid = c['ConceptID']
-            if cid not in concepts: concepts[cid] = {}
-            concepts[cid][c['Language']] = c
-        groupers = [dict(d.items()) for d in root.findall('{http://openehr.org/Terminology.xsd}Grouper')]
-        groupers = dict([(d['id'], d) for d in groupers])
-        for g in groupers.values():
-            g['conceptids'] = []
+        for g_element in root.findall('group'):
+            group = groups[g_element.attrib['name']] = []
+            for c_element in g_element.findall('concept'):
+                concepts[c_element.attrib['id']] = {lang: c_element.attrib}
+                group.append(c_element.attrib['id'])
             
-        for g in [dict(g.items()) for g in root.findall('{http://openehr.org/Terminology.xsd}GroupedConcept')]:
-            try:
-                grouper = groupers[g['GrouperID']] 
-            except:
-                print('Error cannot find grouper %s' % g)
-                continue
-            try:
-                concept = concepts[g['ChildID']]
-            except:
-                print('Error cannot find concept %s' % g)
-                continue
-            grouper['conceptids'].append(g['ChildID'])
-            
-        openehr_terminology = OpenEHRTerminologyAccess(concepts, groupers)
+        openehr_terminology = OpenEHRTerminologyAccess(concepts, groups, lang)
         register_terminology('openehr', openehr_terminology)
 
         # Terminology identifiers - really this might be a codeset
-        cls._vsab_terminology_identifiers = [t.get('VSAB')
-                for t in root.findall('{http://openehr.org/Terminology.xsd}TerminologyIdentifiers')
-                if t.get('VSAB')]
+        #cls._vsab_terminology_identifiers = [t.get('VSAB')
+        #        for t in root.findall('{http://openehr.org/Terminology.xsd}TerminologyIdentifiers')
+        #        if t.get('VSAB')]
 
 class CodePhrase:
     """
         This is a rm.datatype - I am concerned about the cross package dependencies.
     """
-    terminologyid, codestring = None, None
-    def __init__(self, terminologyid, codestring):
-        self.terminologyid, self.codestring = terminologyid, codestring
+    terminologyid, code_string = None, None
+    def __init__(self, terminologyid, code_string):
+        self.terminologyid, self.code_string = terminologyid, code_string
+    def __eq__(self, other):
+        if isinstance(other, CodePhrase):
+            return other.terminologyid == self.terminologyid and other.code_string == self.code_string
+        return False
+    def __repr__(self):
+        return 'CodePhrase("%s", "%s")' % (self.terminologyid, self.code_string)
 
 class TerminologyService(TerminologyServiceMixIn, CodeSetServiceMixIn):
     @classmethod
@@ -342,32 +379,19 @@ class TerminologyService(TerminologyServiceMixIn, CodeSetServiceMixIn):
             The file also contains code sets as follows.
               <Language code="af" Description="Afrikaans" />
         """
-        class OpenEHRCodeSetAccess(CodeSetAccess):
-            """
-            """
-            _id = None
-            _base_lang = None
-            _codes = None
-            _translations = None
+        path = os.path.join(OPENEHR_TERMINOLOGY_DIRECTORY,
+                'openehr_terminology_%s.xml' % OPENEHR_TERMINOLOGY_LANGUAGE)
 
-            def id(self):
-                return self._id
-
-            def all_codes(self):
-                return self._codes
-
-            @abstractmethod
-            def has_lang(self, a_lang):
-                """ True if code set knows about 'a_lang'.  """
-
-            @abstractmethod
-            def has_code(self, a_code):
-                """ True if code set knows about 'a_code'.  """
-
-
-        with open(OPENEHR_TERMINOLOGY_FILEPATH) as terminology_file:
+        with open(path) as terminology_file:
             root = ET().parse(terminology_file)
-            cls._bootstrap_terminologyservice(root)
+            cls._bootstrap_terminologyservice(root, OPENEHR_TERMINOLOGY_LANGUAGE)
+            cls._bootstrap_codesetservice(root, OPENEHR_TERMINOLOGY_LANGUAGE)
+
+        path = os.path.join(OPENEHR_TERMINOLOGY_DIRECTORY,
+                'external_terminologies_%s.xml' % OPENEHR_TERMINOLOGY_LANGUAGE)
+        with open(path) as terminology_file:
+            root = ET().parse(terminology_file)
+            cls._bootstrap_codesetservice(root, OPENEHR_TERMINOLOGY_LANGUAGE)
 
 # For now load this here: maybe should be taken out so it can be stopped
 TerminologyService.bootstrap()
