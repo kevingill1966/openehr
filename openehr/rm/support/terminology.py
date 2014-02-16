@@ -354,19 +354,49 @@ class TerminologyServiceMixIn(OpenEHRTerminologyGroupIdentifiers):
         #        for t in root.findall('{http://openehr.org/Terminology.xsd}TerminologyIdentifiers')
         #        if t.get('VSAB')]
 
-class CodePhrase:
+class CodePhrase(object):
     """
+        A fully coordinated (i.e. all "coordination" has been performed) term from a ter-
+        minology service (as distinct from a particular terminology).
+
         This is a rm.datatype - I am concerned about the cross package dependencies.
     """
-    terminologyid, code_string = None, None
-    def __init__(self, terminologyid, code_string):
-        self.terminologyid, self.code_string = terminologyid, code_string
+    _terminology_id = _code_string = None
+
+    @property
+    def terminology_id(self):
+        return self._terminology_id
+
+    @property
+    def code_string(self):
+        return self._code_string
+
+    @terminology_id.setter
+    def terminology_id(self, value):
+        if type(value) == str:
+            value = TerminologyID(str)
+        if value is not None and not isinstance(value, TerminologyID):
+            raise AttributeError('terminology_id must be of type TerminologyID [%s]' % value)
+        self._terminology_id = value
+
+    @code_string.setter
+    def code_string(self, value):
+        if value is not None and (not isinstance(value, str) or len(value) == 0):
+            raise AttributeError('code_string must not be empty')
+        self._code_string = value
+
+    def __init__(self,terminology_id, code_string):
+        self.terminology_id = terminology_id
+        self.code_string = code_string
+
+    def __repr__(self):
+        return 'CodePhrase(termnology_id: %s, code_string: %s)' % (self.terminology_id, self.code_string)
+
     def __eq__(self, other):
         if isinstance(other, CodePhrase):
-            return other.terminologyid == self.terminologyid and other.code_string == self.code_string
+            return other.terminology_id == self.terminology_id and other.code_string == self.code_string
         return False
-    def __repr__(self):
-        return 'CodePhrase("%s", "%s")' % (self.terminologyid, self.code_string)
+
 
 class TerminologyService(TerminologyServiceMixIn, CodeSetServiceMixIn):
     @classmethod
