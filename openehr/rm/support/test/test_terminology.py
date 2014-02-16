@@ -110,3 +110,14 @@ class TestTerminology(unittest.TestCase):
             terminology.CodePhrase(identification.TerminologyID('ISO_639-1'), 'de')))
         self.assertTrue(cs_countries.has_code(
             terminology.CodePhrase(identification.TerminologyID('ISO_3166-1'), 'DE')))
+
+class TestCodePhrase(unittest.TestCase):
+
+    def test_constructor(self):
+        t1 = terminology.CodePhrase(identification.TerminologyID('ISO_639-1'), "english")
+
+        t2 = terminology.CodePhrase('ISO_639-1', "english")
+        self.assertEqual(t1, t2)
+
+        with self.assertRaises(AttributeError):
+            t2 = terminology.CodePhrase(None, "english")

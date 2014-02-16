@@ -374,8 +374,8 @@ class CodePhrase(object):
     @terminology_id.setter
     def terminology_id(self, value):
         if type(value) == str:
-            value = TerminologyID(str)
-        if value is not None and not isinstance(value, TerminologyID):
+            value = TerminologyID(value)
+        if not isinstance(value, TerminologyID):
             raise AttributeError('terminology_id must be of type TerminologyID [%s]' % value)
         self._terminology_id = value
 

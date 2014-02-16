@@ -310,6 +310,8 @@ class TerminologyID(ObjectID):
     def version_id(self):
         return self.__version
 
+    def __repr__(self):
+        return 'TerminologyID(%s)' % self.value
 
 class VersionTreeID(object):
     """
