@@ -153,9 +153,9 @@ class DvCodedText(DvText):
             raise AttributeError('defining_code  must not be of type CodePhrase [%s]' % value)
         self._defining_code = value
 
-    def __init__(self,definingCode,value,mappings=None,formatting=None,hyperlink=None,language=None,encoding=None):
-        self.definingCode=definingCode
-        DvText.__init__(self,value,mappings,formatting,hyperlink,language,encoding)
+    def __init__(self, defining_code, value, mappings=None, formatting=None, hyperlink=None, language=None, encoding=None):
+        self.defining_code = defining_code
+        DvText.__init__(self, value, mappings, formatting, hyperlink, language,encoding)
  
 class TermMapping(DataValue):
     """
@@ -207,7 +207,7 @@ class TermMapping(DataValue):
         self.match = match
         if purpose is not None:
             openehr_terminology = terminologyService.terminology(TerminologyService.TERMINOLOGY_ID)
-            if not openehr_terminology.has_code_for_group_id(TerminologyService.GROUP_ID_TERM_MAPPING_PURPOSE, purpose.definingCode):
+            if not openehr_terminology.has_code_for_group_id(TerminologyService.GROUP_ID_TERM_MAPPING_PURPOSE, purpose.defining_code):
                 raise AttributeError('Terminology service must have the purpose defining code')
         self.purpose = purpose
 
@@ -247,8 +247,8 @@ class DvParagraph(DataValue):
         if not isinstance(value, list):
             raise AttributeError('items must be of type list [%s]' % value)
         for item in value:
-            if not isinstance(value, DvText):
-                raise AttributeError('items contents must be of type DvText [%s]' % value)
+            if not isinstance(item, DvText):
+                raise AttributeError('items contents must be of type DvText [%s]' % item)
         self._items = value
 
     def __init__(self,items):
