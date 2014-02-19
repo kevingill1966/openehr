@@ -59,7 +59,7 @@ class TestDvOrdered(unittest.TestCase):
 
         class DummyCodePhrase(CodePhrase):
             def __init__(self,code_string):
-                self.codeString = code_string
+                self.code_string = code_string
                 self.terminologyId = DummyTerminologyID()
                 
                 
@@ -155,7 +155,7 @@ class TestDvOrdered(unittest.TestCase):
         final_diabetes_result = OrderedNumber(7,normal_status=DummyCodePhrase(u"HHH"))
         self.assertFalse(final_diabetes_result.is_normal())
 
-        final_diabetes_result = OrderedNumber(7,normal_status=DummyCodePhrase(u"N"))
+        final_diabetes_result = OrderedNumber(7,normal_status=DummyCodePhrase("N"))
         self.assertTrue(final_diabetes_result.is_normal())
 
         """
@@ -251,6 +251,40 @@ class TestDvOrdered(unittest.TestCase):
         # Traceback (most recent call last):
         # ...
         # Invalid: Both normal_status and normal_range are defined and validated correctly. Only one of them can be validated by the time.
+
+
+    def testIsNormalWithoutNormalStatusAndNormalRange(self):
+        count = DvCount(accuracy=0, accuracy_is_percent=False, magnitude=1)
+        with self.assertRaises(TypeError):
+            count.is_normal()
+
+    def testIsNormalWithNormalStatus(self):
+        normalStatus = CodePhrase("normal statuses", "N")
+        count = DvCount(normal_status=normalStatus, accuracy=0, accuracy_is_percent=False, magnitude=1)       
+        self.assertTrue(count.is_normal())
+
+    def testIsNormalWithAbnormalStatus(self):
+        normalStatus = CodePhrase("normal statuses", "L")
+        count = DvCount(normal_status=normalStatus, accuracy=0, accuracy_is_percent=False, magnitude=1)
+        self.assertFalse(count.is_normal())
+
+    def testIsNormalWithNormalRange(self):
+        normalRange = DvInterval(DvCount(0), DvCount(2))
+        count = DvCount(normal_range=normalRange, accuracy=0, accuracy_is_percent=False, magnitude=1)
+        self.assertTrue(count.is_normal());
+    
+    def testIsNormalWithNoneInclusiveNormalRange(self):
+        normalRange = DvInterval(DvCount(2), DvCount(4))
+        count = DvCount(normal_range=normalRange, accuracy=0, accuracy_is_percent=False, magnitude=1)       
+        self.assertFalse(count.is_normal());
+    
+    def testIsNormalWithNormalStatusAndNormalRange(self):
+        normalRange = DvInterval(DvCount(0), DvCount(2))
+        normalStatus = CodePhrase("normal statuses", "N")
+        count = DvCount(normal_range=normalRange, normal_status=normalStatus, accuracy=0,
+                    accuracy_is_percent=False, magnitude=1)
+        self.assertTrue(count.is_normal());
+    
 
 class TestDvOrdinal(unittest.TestCase):
     def test_constructor(self):

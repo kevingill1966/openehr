@@ -75,7 +75,7 @@ class DvOrdered(DataValue):
             if self.normal_range.has(self):
                 return True
         elif has_status:
-            if self.normal_status.codeString == u"N":
+            if self.normal_status.code_string == "N":
                 return True
         else: raise TypeError("The object doesn't have any normal range.")
         return False
