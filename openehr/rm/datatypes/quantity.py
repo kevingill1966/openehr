@@ -243,8 +243,8 @@ class DvAmount(DvQuantified):
         return this_magnitude < other_magnitude
 
     def _do_arithmetic_expression(self,other,klass,operator):
-        has_ac_unknown = self.accuracy_unknown()
-        other_has_ac_unknown = other.accuracy_unknown()
+        has_ac_unknown = self.accuracy_unknown
+        other_has_ac_unknown = other.accuracy_unknown
         other_has_percent = other.accuracy_is_percent
         has_percent = self.accuracy_is_percent
         new_obj_data = {}
