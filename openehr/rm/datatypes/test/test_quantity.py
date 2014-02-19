@@ -488,6 +488,48 @@ class TestDvCount(unittest.TestCase):
         c = DvCount(magnitude=9)
         self.assertEqual(type(c), DvCount)
 
+    def testAdd(self):
+        c1 = DvCount(3)
+        c2 = DvCount(5)
+        expected = DvCount(8)
+        self.assertEqual(expected, c1.add(c2))
+        self.assertEqual(expected, c2.add(c1))
+
+    def testSubtract(self):
+        c1 = DvCount(3)
+        c2 = new DvCount(5)
+        expected = DvCount(2)
+        self.assertEqual(expected, c2.subtract(c1))
+
+    def testCompareTo(self):
+        c1 = DvCount(3)
+        c2 = DvCount(5)
+        c3 = DvCount(3)
+
+        self.assertTrue("c1 < c2", c1.compareTo(c2) < 0)
+        self.assertTrue("c2 > c1", c2.compareTo(c1) > 0)
+        self.assertTrue("c3 == c1", c3.compareTo(c1) == 0)
+        self.assertTrue("c1 == c3", c1.compareTo(c3) == 0)
+    
+    def testGetOtherReferenceRanges(self):
+        Map<String, Object> values = new HashMap<String, Object>();
+        DvText normal = new DvText(ReferenceRange.NORMAL);
+        DvCount lower = new DvCount(1);
+        DvCount upper = new DvCount(10);
+        ReferenceRange<DvCount> normalRange = new ReferenceRange<DvCount>(
+                normal, new DvInterval<DvCount>(lower, upper));
+        List<ReferenceRange<DvCount>> otherReferenceRanges =
+                new ArrayList<ReferenceRange<DvCount>>();
+        otherReferenceRanges.add(normalRange);
+        
+        DvCount count = new DvCount(otherReferenceRanges, null, null, 0.0, 
+                false, null, 5);
+        
+        assertEquals("otherReferenceRanges wrong", otherReferenceRanges,
+                        count.getOtherReferenceRanges());
+    }
+
+
 class TestDvInterval(unittest.TestCase):
         pass
 
