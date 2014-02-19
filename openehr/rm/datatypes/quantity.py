@@ -282,25 +282,40 @@ class DvCount(DvAmount):
             raise AttributeError('magnitude attribute must be an Integer')
         self._magnitude = value
 
+    def __lt__(self, val):
+        if not isinstance(val, DvCount):
+            raise TypeError("Argument type must be DvCount")
+        return self.magnitude < val.magnitude
+
+    def __gt__(self, val):
+        if not isinstance(val, DvCount):
+            raise TypeError("Argument type must be DvCount")
+        return self.magnitude > val.magnitude
+
+    def __eq__(self, val):
+        if not isinstance(val, DvCount):
+            raise TypeError("Argument type must be DvCount")
+        return self.magnitude == val.magnitude
+
     def __add__(self, val):
         if not isinstance(val, DvCount):
             raise TypeError("Argument type must be DvCount")
         else:
             return DvCount(magnitude = self.magnitude + val.magnitude,
-                    accuracy=self.accuracy, accuracy_is_percent=self.accuracy_is_percent, magnitued_status=self.magnitude_status,
+                    accuracy=self.accuracy, accuracy_is_percent=self.accuracy_is_percent, magnitude_status=self.magnitude_status,
                     normal_status=self.normal_status, normal_range=self.normal_range, other_reference_ranges=self.other_reference_ranges)
 
     def __sub__(self, val):
-        if not isinstance(val,DvCount):
+        if not isinstance(val, DvCount):
             raise TypeError("Argument type must be DvCount")
         else:
             return DvCount(magnitude = self.magnitude - val.magnitude, 
-                    accuracy=self.accuracy, accuracy_is_percent=self.accuracy_is_percent, magnitued_status=self.magnitude_status,
+                    accuracy=self.accuracy, accuracy_is_percent=self.accuracy_is_percent, magnitude_status=self.magnitude_status,
                     normal_status=self.normal_status, normal_range=self.normal_range, other_reference_ranges=self.other_reference_ranges)
 
     def __neg__(self):
         return DvCount(magnitude = -self.magnitude, 
-                    accuracy=self.accuracy, accuracy_is_percent=self.accuracy_is_percent, magnitued_status=self.magnitude_status,
+                    accuracy=self.accuracy, accuracy_is_percent=self.accuracy_is_percent, magnitude_status=self.magnitude_status,
                     normal_status=self.normal_status, normal_range=self.normal_range, other_reference_ranges=self.other_reference_ranges)
 
 
@@ -436,6 +451,7 @@ class DvQuantity(DvAmount):
 
 class ReferenceRange(DvOrdered):
     _range = _meaning = None
+    NORMAL = 'normal'
 
     @property
     def meaning(self):
