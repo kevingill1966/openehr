@@ -383,13 +383,40 @@ class DvProportion(DvAmount, ProportionKind):
         self._precision = value
 
 
-    def __init__(self, numerator, denominator, type, precision=None, accuracy=None, accuracy_is_percent=None, magnitude=None, normal_range=None, other_reference_ranges=None, normal_status=None):
+    def __init__(self, numerator, denominator, type=None, precision=None, accuracy=None, accuracy_is_percent=None, magnitude=None, normal_range=None, other_reference_ranges=None, normal_status=None):
         self.numerator = numerator
         self.denominator = denominator
         self.type = type
         self.precision = precision
+        self._validate_attributes()
 
         DvAmount.__init__(self, accuracy=accuracy, accuracy_is_percent=accuracy_is_percent, magnitude=magnitude, normal_range=normal_range, other_reference_ranges=other_reference_ranges, normal_status=normal_status)
+
+    def _validate_attributes(self):
+        _type = self.type
+        numerator = self.numerator
+        denominator = self.denominator
+        precision = self.precision
+
+        # Constraints
+        if _type == ProportionKind.pk_unitary:
+            if denominator != 1:
+                raise AttributeError("denominator for unitary proportion must be 1")
+
+        elif _type == ProportionKind.pk_percent:
+            if denominator != 100:
+                raise AttributeError("denominator for unitary proportion must be 100")
+
+        elif _type == ProportionKind.pk_fraction or _type == ProportionKind.pk_integer_fraction:
+            if not (type(numerator) == int and type(denominator) == int):
+                raise AttributeError("both numberator and denominator must be integral for " +
+                    "fraction or integer fraction proportion")
+        
+        if type(numerator) == int and type(denominator) == int and (precision != None and precision != 0):
+            raise AttributeError( "precision must be 0 if both numerator and denominator are integral")
+
+        if not (type(numerator) == int and type(denominator) == int) and (precision == None or precision == 0):
+            raise AttributeError("zero precision for non-integral numerator or denominator")
 
 
     def is_integral(self):

@@ -3,7 +3,7 @@ import unittest
 
 from openehr.rm.datatypes.quantity import DvOrdered, DvOrdinal, \
     DvQuantified, DvAbsoluteQuantity, DvAmount, DvCount, \
-    DvInterval, DvProportion, DvQuantity, ReferenceRange, NonParametrizedValue
+    DvInterval, DvProportion, DvQuantity, ReferenceRange, NonParametrizedValue, ProportionKind
 from openehr.rm.datatypes.text import CodePhrase, DvCodedText
 from openehr.rm.support.identification import TerminologyID
 from openehr.rm.datatypes.text import DvText, TermMapping
@@ -573,9 +573,52 @@ class TestDvInterval(unittest.TestCase):
 
 class TestDvProportion(unittest.TestCase):
     def test_constructor(self):
-        p = DvProportion(numerator=2, denominator=1, type=0, precision=-1)
+        p = DvProportion(numerator=2, denominator=1, type=ProportionKind.pk_ratio, precision=0)
         self.assertEqual(type(p), DvProportion)
 
+    def testIsIntegeralWithFraction(self):
+        p = DvProportion(1, 2, ProportionKind.pk_fraction, 0)
+        self.assertTrue(p.is_integral(), msg="fraction expected to be integral")
+    
+    def testIsIntegeralWithPercent(self):
+        p = DvProportion(1.2, 100, ProportionKind.pk_percent, 1);
+        self.assertFalse( p.is_integral(), msg="percent expected not to be integral")
+    
+    def testCreateFractionProportionWithNonZeroPrecision(self):
+        with self.assertRaises(AttributeError):
+            DvProportion(1, 10, ProportionKind.pk_fraction, 1)
+    
+    def testCreateProportionWithZeroPrecisionAndNonIntegral(self):
+        with self.assertRaises(AttributeError):
+            DvProportion(1.3, 10, ProportionKind.pk_ratio, 0)
+    
+    def testCreateIntegralProportionWithNonIntegralNumer(self):
+        with self.assertRaises(AttributeError):
+            DvProportion(1.3, 10, ProportionKind.pk_fraction, 0)
+    
+    def testCreateUnitaryProportionWithBadDenominator(self):
+        with self.assertRaises(AttributeError):
+            DvProportion(1.3, 2, ProportionKind.pk_unitary, 1)
+    
+    def testCreateUnitaryProportionWithRightDenominator(self):
+        DvProportion(1.3, 1, ProportionKind.pk_unitary, 1)
+    
+    def testCreateIngegerProportionWithoutPricision(self):
+        with self.assertRaises(AttributeError):
+            DvProportion(1.0, 1.0, ProportionKind.pk_ratio)
+            #assertTrue(e instanceof IllegalArgumentException);
+    
+    def testCreateDoubleProportionWithoutPricision(self):
+        with self.assertRaises(AttributeError):
+            DvProportion(0.5, 1.0, ProportionKind.pk_ratio)
+    
+    def testCreatePercentProportionWithBadDenominator(self):
+        with self.assertRaises(AttributeError):
+            DvProportion(1.25, 10, ProportionKind.pk_percent, 2)
+    
+    def testCreatePercentProportionWithRightDenominator(self):
+        DvProportion(1.25, 100, ProportionKind.pk_percent, 2)
+    
 class TestDvQuantity(unittest.TestCase):
     def test_constructor(self):
         qty = DvQuantity(magnitude=100.2, units="km/h", precision=-1)
