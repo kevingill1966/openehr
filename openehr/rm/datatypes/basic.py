@@ -41,6 +41,7 @@ class DataValue(metaclass=ABCMeta):
     def __init__(self):
         pass
 
+    # TODO: The java implementation has a method to parse a string
 
 class DvBoolean(DataValue):
     """

@@ -150,7 +150,7 @@ class DvCodedText(DvText):
     @defining_code.setter
     def defining_code(self, value):
         if not isinstance(value, CodePhrase):
-            raise AttributeError('defining_code  must not be of type CodePhrase [%s]' % value)
+            raise AttributeError('defining_code must be of type CodePhrase [%s]' % value)
         self._defining_code = value
 
     def __init__(self, defining_code, value, mappings=None, formatting=None, hyperlink=None, language=None, encoding=None):

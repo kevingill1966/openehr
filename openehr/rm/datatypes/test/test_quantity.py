@@ -294,6 +294,18 @@ class TestDvOrdinal(unittest.TestCase):
         o = DvOrdinal(value=1, symbol=ct)
         self.assertEqual(type(o), DvOrdinal)
 
+    def testCreateDvOrdinalWithNegativeValue(self):
+        definingCode = CodePhrase("test", "123")
+        coded = DvCodedText(value="coded text", defining_code=definingCode)
+        DvOrdinal(-1, coded)
+            
+    def testEquals(self):
+        ord1 = DvOrdinal(1, DvCodedText(value="text", defining_code=CodePhrase("local", "at0002")))
+        ord2 = DvOrdinal(1, DvCodedText(value="text", defining_code=CodePhrase("local", "at0002")))
+        self.assertTrue(ord1 == ord2)
+        self.assertTrue(ord2 == ord1)
+        self.assertEqual(ord2, ord1)
+
 class SimpleDvQuantified(DvQuantified):
     pass
 

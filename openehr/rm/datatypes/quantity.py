@@ -139,6 +139,11 @@ class DvOrdinal(DvOrdered):
             return self.value < other.value
         return False
 
+    def __eq__(self, other):
+        if self.is_strictly_comparable_to(other):
+            return self.value == other.value
+        return False
+
 
 class DvQuantified(DvOrdered):
     _magnitude = _accuracy = _magnitude_status = None
