@@ -32,24 +32,24 @@ class DvOrdered(DataValue):
     def normal_range(self, value):
         if value is not None and not isinstance(value, DvInterval):
             raise AttributeError('normal_range attribute must be a DvInterval')
-        if value.lower.__class__ != self.__class__:
+        if value is not None and value.lower.__class__ != self.__class__:
             raise NonParametrizedValue(("The normal_range attribute must"
                     " include a lower attribute from the same type as this object."))
         self._normal_range = value
 
     @other_reference_ranges.setter
     def other_reference_ranges(self, value):
-        if value is None:
-            value = []
-        elif type(value) != list:
-            raise AttributeError('other_reference_ranges attribute must be a list')
-        for ref_range in value:
-            if not isinstance(ref_range, DvOrdered):
-                raise AttributeError('other_reference_ranges must contain DvOrdered types only')
-            if ref_range.range.lower.__class__ != self.__class__:
-                raise NonParametrizedValue(("The items from the"
-                        "other_reference_ranges must include a lower"
-                        "attribute from  the same type as this object."))
+        if value is not None:
+            if type(value) != list:
+                raise AttributeError('other_reference_ranges attribute must be a list')
+            for ref_range in value:
+                if not isinstance(ref_range, DvOrdered):
+                    raise AttributeError('other_reference_ranges must contain DvOrdered types only')
+                if ref_range.range.lower.__class__ != self.__class__:
+                    raise NonParametrizedValue(("The items from the"
+                            "other_reference_ranges must include a lower"
+                            "attribute from  the same type as this object."))
+
         self._other_reference_ranges = value
 
     @normal_status.setter
@@ -141,7 +141,7 @@ class DvOrdinal(DvOrdered):
 
 
 class DvQuantified(DvOrdered):
-    _magnitude = _accuracy = magnitude_status = None
+    _magnitude = _accuracy = _magnitude_status = None
     VALID_STATUS = ['=', '>', '<', '<=', '>=', '~']
 
 
@@ -320,7 +320,7 @@ class ProportionKind(object):
         return n in (self.pkRatio, self.pkUnitary, self.pkPercent, self.pkFraction, self.pkIntegerFraction)
 
 class DvProportion(DvAmount, ProportionKind):
-    _type = _numerator = _denominator = None
+    _precision = _type = _numerator = _denominator = None
 
     @property
     def numerator(self):
@@ -363,10 +363,10 @@ class DvProportion(DvAmount, ProportionKind):
         self._precision = value
 
 
-    def __init__(self, numerator, denominator, type_, precision=None, accuracy=None, accuracy_is_percent=None, magnitude=None, normal_range=None, other_reference_ranges=None, normal_status=None):
+    def __init__(self, numerator, denominator, type, precision=None, accuracy=None, accuracy_is_percent=None, magnitude=None, normal_range=None, other_reference_ranges=None, normal_status=None):
         self.numerator = numerator
         self.denominator = denominator
-        self.type = type_
+        self.type = type
         self.precision = precision
 
         DvAmount.__init__(self, accuracy=accuracy, accuracy_is_percent=accuracy_is_percent, magnitude=magnitude, normal_range=normal_range, other_reference_ranges=other_reference_ranges, normal_status=normal_status)
@@ -383,7 +383,7 @@ class DvProportion(DvAmount, ProportionKind):
 
 
 class DvQuantity(DvAmount):
-    _precision = None
+    _units = _precision = None
 
     @property
     def precision(self):
