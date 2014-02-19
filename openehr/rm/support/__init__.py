@@ -127,6 +127,8 @@ class Largest(object):
 
 class Interval(object):
 
+    lower = lower_unbounded = lower_included = upper = upper_unbounded = upper_included = None
+
     def __init__(self, lower=Smallest(), upper=Largest(),
                  lower_included=False, upper_included=False, **kw):
 
