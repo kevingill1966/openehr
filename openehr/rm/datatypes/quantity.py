@@ -440,10 +440,9 @@ class DvQuantity(DvAmount):
     def precision(self, value):
         if value is not None and type(value) not in [int]:
             raise AttributeError('precision attribute must be an Integer ')
-        if value is not None and value >= -1:
-            self._precision = value
-        else:
-            self._precision = None
+        if value is not None and value < 0:
+            raise AttributeError('precision must be positive or zero ')
+        self._precision = value
 
     @property
     def units(self):
@@ -461,6 +460,8 @@ class DvQuantity(DvAmount):
 
     @magnitude.setter
     def magnitude(self, value):
+        if type(value) == int:
+            value = float(value)
         if value is not None and type(value) not in [float]:
             raise AttributeError('magnitude attribute must be a Float')
         self._magnitude = value
@@ -480,6 +481,16 @@ class DvQuantity(DvAmount):
         if (isinstance(other, self.__class__)):
             return self.units==other.units and self.magnitude==other.magnitude
 
+    def __str__(self):
+        if self.units:
+            return '%.*f,%s' % (self.precision or 0, self.magnitude, self.units)
+        else:
+            return '%.*f' % (self.precision or 0, self.magnitude)
+
+    def __eq__(self, other):
+        if self.is_strictly_comparable_to(other):
+            return self.magnitude == other.magnitude and self.units == other.units and self.precision == other.precision
+        return False
 
 class ReferenceRange(DvOrdered):
     _range = _meaning = None

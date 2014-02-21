@@ -9,6 +9,7 @@ from openehr.rm.support.identification import TerminologyID
 from openehr.rm.datatypes.text import DvText, TermMapping
 from openehr.rm.datatypes.uri import DvURI
 
+
 class TestDvOrdered(unittest.TestCase):
     def test_oship_doctest(self):
         """
@@ -621,8 +622,78 @@ class TestDvProportion(unittest.TestCase):
     
 class TestDvQuantity(unittest.TestCase):
     def test_constructor(self):
-        qty = DvQuantity(magnitude=100.2, units="km/h", precision=-1)
+        qty = DvQuantity(magnitude=100.2, units="km/h", precision=0)
         self.assertEqual(type(qty), DvQuantity)
+
+    def testEquals(self):
+        q1 = DvQuantity(units="mg", magnitude=10, precision=2)
+        q2 = DvQuantity(units="mg", magnitude=10, precision=2)
+        self.assertTrue(q1 == q2)
+
+        q1 = DvQuantity(units="mg", magnitude=10)
+        q2 = DvQuantity(units="mg", magnitude=10)
+        self.assertTrue(q1 == q2)
+
+        q1 = DvQuantity(magnitude=10);
+        q2 = DvQuantity(magnitude=10);
+        self.assertTrue(q1 == q2)
+
+        q1 = DvQuantity(magnitude=10.5);
+        q2 = DvQuantity(magnitude=10.5);
+        self.assertTrue(q1 == q2)
+
+        q1 = DvQuantity(units="mg", magnitude=10, precision=2)
+        q2 = DvQuantity(units="mg", magnitude=10)
+        self.assertFalse(q1 == q2);
+
+        # missing units
+        q1 = DvQuantity(magnitude=10);
+        q2 = DvQuantity(units="mg", magnitude=10)
+        self.assertFalse(q1 == q2)
+
+        # diff precision
+        q1 = DvQuantity(units="mg", magnitude=10, precision=2)
+        q2 = DvQuantity(units="mg", magnitude=10, precision=3)
+        self.assertFalse(q1 == q2)
+
+        # diff units
+        q1 = DvQuantity(units="kg", magnitude=10, precision=2)
+        q2 = DvQuantity(units="mg", magnitude=10, precision=2)
+        self.assertFalse(q1 == q2)
+
+        # diff getMagnitude
+        q1 = DvQuantity(units="mg", magnitude=12, precision=2)
+        q2 = DvQuantity(units="mg", magnitude=10, precision=2)
+        self.assertFalse(q1 == q2)
+
+    def testToString(self):
+        q = DvQuantity(units="kg", magnitude=78, precision=2)
+        expected = "78.00,kg";
+        self.assertEqual(expected, str(q))
+
+        q = DvQuantity(units="kg", magnitude=78)
+        expected = "78,kg";
+        self.assertEqual(expected, str(q))
+
+        q = DvQuantity(magnitude=78);
+        expected = "78";
+        self.assertEqual(expected, str(q))
+
+        q = DvQuantity(magnitude=78.9);
+        expected = "79";
+        self.assertEqual(expected, str(q))
+
+        q = DvQuantity(magnitude=78.5);
+        expected = "78";
+        self.assertEqual(expected, str(q))
+
+        q = DvQuantity(magnitude=78.5, precision=3)
+        expected = "78.500";
+        self.assertEqual(expected, str(q))
+    
+    def testCreateWithUnlimitedPrecision(self):
+        with self.assertRaises(AttributeError):
+            DvQuantity(units="mg", magnitude=12, precision=-1)
 
 class TestReferenceRange(unittest.TestCase):
     def test_constructor(self):
