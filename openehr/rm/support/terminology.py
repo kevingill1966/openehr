@@ -2,7 +2,7 @@
 
 
 import os
-from xml.etree.cElementTree import ElementTree as ET
+import xml.etree.ElementTree as ET
 from inspect import getmembers
 from abc import ABCMeta, abstractmethod
 from openehr.rm.support.identification import TerminologyID
@@ -187,7 +187,7 @@ class CodeSetServiceMixIn(OpenEHRCodeSetIdentifiers):
                 }
 
     def code_set_identifiers(self):
-        return [ codesetaccess_obj.id() for codeset_access_obj in  AVAILABLE_CODE_SET.values() ]
+        return [ codeset_access_obj.id() for codeset_access_obj in  AVAILABLE_CODE_SET.values() ]
 
     @classmethod
     def _bootstrap_codesetservice(cls, root, lang):
@@ -412,14 +412,14 @@ class TerminologyService(TerminologyServiceMixIn, CodeSetServiceMixIn):
                 'openehr_terminology_%s.xml' % OPENEHR_TERMINOLOGY_LANGUAGE)
 
         with open(path) as terminology_file:
-            root = ET().parse(terminology_file)
+            root = ET.fromstring(terminology_file.read())
             cls._bootstrap_terminologyservice(root, OPENEHR_TERMINOLOGY_LANGUAGE)
             cls._bootstrap_codesetservice(root, OPENEHR_TERMINOLOGY_LANGUAGE)
 
         path = os.path.join(OPENEHR_TERMINOLOGY_DIRECTORY,
                 'external_terminologies_%s.xml' % OPENEHR_TERMINOLOGY_LANGUAGE)
         with open(path) as terminology_file:
-            root = ET().parse(terminology_file)
+            root = ET.fromstring(terminology_file.read())
             cls._bootstrap_codesetservice(root, OPENEHR_TERMINOLOGY_LANGUAGE)
 
 # For now load this here: maybe should be taken out so it can be stopped

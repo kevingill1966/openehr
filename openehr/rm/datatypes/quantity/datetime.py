@@ -52,7 +52,7 @@ class DvDuration(DvAmount,TimeDefinitions):
         if magnitude_status is None or self.valid_magnitude_status(magnitude_status):
             self.magnitude_status = magnitude_status
         else:
-            raise ValueError(u"Magnitude status must be '=', '>', '<', '<=', '>=', '~' or None")
+            raise ValueError("Magnitude status must be '=', '>', '<', '<=', '>=', '~' or None")
         super(DvQuantified,self).__init__(normal_range, other_reference_ranges, normal_status)
 
     def magnitude(self):
@@ -63,7 +63,7 @@ class DvDuration(DvAmount,TimeDefinitions):
            P[nnY][nnM][nnW][nnD][T[nnH][nnM][nnS]] .
         """
         if seconds == 0:
-            return u'PT0S'
+            return 'PT0S'
         date_time_parts = {'Y':0,
                            'M':0,
                            'W':0,
@@ -284,7 +284,7 @@ class DvDate(DvTemporal):
     def __init__(self,value,magnitude,accuracy,normalRange,otherReferenceRanges,normalStatus):
         self.value = value
         dt1 = DateFrom(value)
-        dt2 = DateFrom(u'0000-01-01')
+        dt2 = DateFrom('0000-01-01')
         dtDiff = dt1 - dt2
         magnitude = dtDiff.days
 
@@ -316,7 +316,7 @@ class DvDateTime(DvTemporal):
     def __init__(self,value,magnitude,accuracy,normalRange,otherReferenceRanges,normalStatus):
         self.value = value
         dt1 = DateTimeFrom(value)
-        dt2 = DateTimeFrom(u'0000-01-01T00:00:00')
+        dt2 = DateTimeFrom('0000-01-01T00:00:00')
         dtDiff = dt1 - dt2
         magnitude = dtDiff.seconds
 
@@ -348,7 +348,7 @@ class DvTime(DvTemporal):
     def __init__(self,value,magnitude,accuracy,normalRange,otherReferenceRanges,normalStatus):
         self.value=value
         dt1 = TimeFrom(value)
-        dt2 = TimeFrom(u'00:00:00')
+        dt2 = TimeFrom('00:00:00')
         dtDiff = dt1 - dt2
         magnitude = dtDiff.seconds
         DvTemporal.__init__(self,magnitude,accuracy,normalRange,otherReferenceRanges,normalStatus)
