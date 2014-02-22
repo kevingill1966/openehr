@@ -11,7 +11,7 @@ import inspect
 from openehr.rm import RMObject
 
 
-SEPARATOR = u"::"
+SEPARATOR = "::"
 
 class InvalidUID(ValueError):
     pass
@@ -43,7 +43,7 @@ class UID(object):
 
 
 class ISO_OID(UID):
-    u""" Model of ISO's Object Identifier (oid) as defined by the
+    """ Model of ISO's Object Identifier (oid) as defined by the
     standard ISO/IEC 8824 .  Oids are formed from integers separated
     by dots. Each non-leaf node in an Oid starting from the left
     corresponds to an assigning authority, and identifies that
@@ -59,7 +59,7 @@ class ISO_OID(UID):
 
 
 class UUID(UID):
-    u""" Model of the DCE Universal Unique Identifier or UUID which
+    """ Model of the DCE Universal Unique Identifier or UUID which
     takes the form of hexadecimal integers separated by hyphens,
     following the pattern 8-4-4-4-12 as defined by the Open Group, CDE
     1.1 Remote Procedure Call specification, Appendix A. Also known as
@@ -84,7 +84,7 @@ class UUID(UID):
 
 
 class InternetID(UID):
-    u""" Model of a reverse internet domain, as used to uniquely
+    """ Model of a reverse internet domain, as used to uniquely
     identify an internet domain. In the form of a dot-separated string
     in the reverse order of a domain name specified by IETF RFC1034
     (http://www.ietf.org/rfc/rfc1034.txt).
@@ -103,7 +103,7 @@ class InternetID(UID):
 
 
 class ObjectID(RMObject):
-    u"""
+    """
         Ancestor (abstract) class of identifiers of informational
         objects.  Ids may be completely meaningless, in which case their
         only job is to refer to something, or may carry some information
@@ -159,7 +159,7 @@ class UIDBasedID(ObjectID):
     _uid = None
 
     def __init__(self, uid, extension=None):
-        value = u""
+        value = ""
         if isinstance(uid, UID):
             self._uid = uid
             value = SEPARATOR.join(( uid.value , extension,))
@@ -209,7 +209,7 @@ class UIDBasedID(ObjectID):
 
 
 class HierObjectID(UIDBasedID):
-    u""" 
+    """ 
         Hierarchical object identifiers.
  
         The syntax of the value attribute is as follows:
@@ -415,8 +415,8 @@ class ArchetypeID(ObjectID):
         Identifier for archetypes, instances of this class are immutable.
     """
 
-    __AXIS_SEPARATOR = u'.'
-    __SECTION_SEPARATOR = u'-'
+    __AXIS_SEPARATOR = '.'
+    __SECTION_SEPARATOR = '-'
     # Note - I weakened this validation from the oship implementation
     __NAME_PATTERN = re.compile(r"[a-zA-Z][a-zA-Z0-9()_/%$#&\.-]*")
     __VERSION_PATTERN = re.compile(r"[a-zA-Z0-9]+")
@@ -635,7 +635,7 @@ class ObjectRef(RMObject):
         return self.type_
 
 class AccessGroupRef(ObjectRef):
-    u""" Reference to access group in an access control service. """
+    """ Reference to access group in an access control service. """
 
     def __init__(self, obj_or_uid, namespace=None, type_=None):
         if namespace == None:
@@ -645,7 +645,7 @@ class AccessGroupRef(ObjectRef):
 
 class LocatableRef(ObjectRef):
 
-    def __init__(self,version_object, path_or_obj=None, namespace=u"",type_=None):
+    def __init__(self,version_object, path_or_obj=None, namespace="",type_=None):
         path = ""
         obj = None
         if path_or_obj is None:
@@ -706,9 +706,9 @@ class PartyRef(ObjectRef):
             type_ = party_object.__class__.__name__
             is_a_valid_type = self.partyref_type_is_valid(type_)
             if is_actor_instance and is_party_instance and not is_a_valid_type :
-                type_ = u'ACTOR'
+                type_ = 'ACTOR'
             elif is_party_instance and not is_a_valid_type:
-                type_ = u'PARTY'
+                type_ = 'PARTY'
             elif is_party_instance and is_a_valid_type:
                 type_ = type_.upper()
             else: raise ValueError("The object must be a Party object.")
@@ -716,12 +716,12 @@ class PartyRef(ObjectRef):
         super(PartyRef,self).__init__(id_,namespace,type_,)
 
     def partyref_type_is_valid(self, type_):
-        return True if type_.upper() in [u'PERSON',
-                                  u'ORGANISATION',
-                                  u'GROUP',
-                                  u'AGENT',
-                                  u'ROLE',
-                                  u'PARTY',
-                                  u'ACTOR'] else False
+        return True if type_.upper() in ['PERSON',
+                                  'ORGANISATION',
+                                  'GROUP',
+                                  'AGENT',
+                                  'ROLE',
+                                  'PARTY',
+                                  'ACTOR'] else False
 
 

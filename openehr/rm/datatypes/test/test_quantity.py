@@ -153,7 +153,7 @@ class TestDvOrdered(unittest.TestCase):
 
         self.assertFalse(final_diabetes_result.is_simple())
 
-        final_diabetes_result = OrderedNumber(7,normal_status=DummyCodePhrase(u"HHH"))
+        final_diabetes_result = OrderedNumber(7,normal_status=DummyCodePhrase("HHH"))
         self.assertFalse(final_diabetes_result.is_normal())
 
         final_diabetes_result = OrderedNumber(7,normal_status=DummyCodePhrase("N"))
@@ -168,10 +168,10 @@ class TestDvOrdered(unittest.TestCase):
         """
 
 
-        complete_diabetes_result = OrderedNumber(7, normal_range=diabetes_range,normal_status=DummyCodePhrase(u"N"))
+        complete_diabetes_result = OrderedNumber(7, normal_range=diabetes_range,normal_status=DummyCodePhrase("N"))
         self.assertFalse(complete_diabetes_result.is_normal())
 
-        complete_diabetes_result = OrderedNumber(3, normal_range=diabetes_range,normal_status=DummyCodePhrase(u"N"))
+        complete_diabetes_result = OrderedNumber(3, normal_range=diabetes_range,normal_status=DummyCodePhrase("N"))
         self.assertTrue(complete_diabetes_result.is_normal())
 
         """
@@ -188,7 +188,7 @@ class TestDvOrdered(unittest.TestCase):
         estrogen_ref_ranges.append(luteal_phase)
         posmenupausal = RefRange("PosMenupausal",StubInterval(OrderedNumber(23),OrderedNumber(103)))
         estrogen_ref_ranges.append(posmenupausal)
-        estrogen_result = OrderedNumber(100,other_reference_ranges=estrogen_ref_ranges,normal_status=DummyCodePhrase(u"LL"))
+        estrogen_result = OrderedNumber(100,other_reference_ranges=estrogen_ref_ranges,normal_status=DummyCodePhrase("LL"))
 
         self.assertFalse(estrogen_result.is_simple())
         self.assertFalse(estrogen_result.is_normal())
@@ -202,10 +202,10 @@ class TestDvOrdered(unittest.TestCase):
         with self.assertRaises(NonParametrizedValue):
             estrogen_result = OrderedNumber(30, normal_range=diff_interval)
 
-        range_different_type = RefRange(u"weird range",diff_interval)
+        range_different_type = RefRange("weird range",diff_interval)
         other_estrogen_range = [range_different_type,follicular_phase]
         with self.assertRaises(NonParametrizedValue):
-            other_estrogen_result = OrderedNumber(30,other_reference_ranges=other_estrogen_range,normal_status=DummyCodePhrase(u"L"))
+            other_estrogen_result = OrderedNumber(30,other_reference_ranges=other_estrogen_range,normal_status=DummyCodePhrase("L"))
 
 
         """
@@ -247,7 +247,7 @@ class TestDvOrdered(unittest.TestCase):
     
         DvOrdered.is_simple = old_simple
         simple_interval = StubInterval(OrderedNumber(2),OrderedNumber(6))
-        weird_value = OrderedNumber(3,normal_range=simple_interval,normal_status=DummyCodePhrase(u"N"))
+        weird_value = OrderedNumber(3,normal_range=simple_interval,normal_status=DummyCodePhrase("N"))
         # >>> IDvOrdered.validateInvariants(weird_value)
         # Traceback (most recent call last):
         # ...
@@ -407,13 +407,13 @@ class TestDvAmount(unittest.TestCase):
         self.assertEqual(box_quantity.other_reference_ranges, None)
         self.assertEqual(box_quantity.normal_status, None)
         self.assertEqual(box_quantity.accuracy, -1.0)
-        self.assertEqual(box_quantity.magnitude_status, u'=')
+        self.assertEqual(box_quantity.magnitude_status, '=')
         self.assertEqual(box_quantity.magnitude, 7)
         with self.assertRaises(TypeError):
             box_quantity.is_normal()
 
         self.assertEqual(box_quantity.is_simple(), True)
-        self.assertTrue(box_quantity.valid_magnitude_status(u"="))
+        self.assertTrue(box_quantity.valid_magnitude_status("="))
 
         weird_amount = AnotherAmount(2)
         with self.assertRaises(NotImplementedError):
@@ -705,7 +705,7 @@ class TestReferenceRange(unittest.TestCase):
         cplang = CodePhrase(tid1, "en")
         cpenc = CodePhrase(tid2, "utf-8")
         uri = DvURI("http://www.mlhim.org")
-        meaning = DvText("Some really interesting ReferenceRange.",[tm,],u"font-family:Arial",uri,cplang,cpenc)
+        meaning = DvText("Some really interesting ReferenceRange.",[tm,],"font-family:Arial",uri,cplang,cpenc)
 
         intvl = DvInterval(0, 10, lower_included=1, upper_included=1)
         rr = ReferenceRange(meaning=meaning, range=intvl)

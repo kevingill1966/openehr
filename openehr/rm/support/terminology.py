@@ -96,40 +96,40 @@ class TerminologyAccess(metaclass=ABCMeta):
 
 class OpenEHRCodeSetIdentifiers(object):
 
-    CODE_SET_ID_CHARACTER_SETS=u'character sets'
-    CODE_SET_ID_COMPRESSION_ALGORITHMS=u'compression algorithms'
-    CODE_SET_ID_COUNTRIES=u'countries'
-    CODE_SET_ID_INTEGRITY_CHECK_ALGORITHMS=u'integrity check algorithms'
-    CODE_SET_ID_LANGUAGES=u'languages'
-    CODE_SET_ID_MEDIA_TYPES=u'media types'
-    CODE_SET_ID_NORMAL_STATUSES=u'normal statuses'
+    CODE_SET_ID_CHARACTER_SETS='character sets'
+    CODE_SET_ID_COMPRESSION_ALGORITHMS='compression algorithms'
+    CODE_SET_ID_COUNTRIES='countries'
+    CODE_SET_ID_INTEGRITY_CHECK_ALGORITHMS='integrity check algorithms'
+    CODE_SET_ID_LANGUAGES='languages'
+    CODE_SET_ID_MEDIA_TYPES='media types'
+    CODE_SET_ID_NORMAL_STATUSES='normal statuses'
 
     def valid_code_set_id(self, an_id):
-        u"""
+        """
         Boolean Validity function to test if an identifier is in
         the tuple defined by class OpenehrCodeSetIdentifiers.
         """
-        code_sets = ( member_value for member_name,member_value in getmembers(self) if member_name.startswith(u'CODE_SET_ID_'))
+        code_sets = ( member_value for member_name,member_value in getmembers(self) if member_name.startswith('CODE_SET_ID_'))
         return an_id in code_sets
 
 
 class OpenEHRTerminologyGroupIdentifiers(object):
 
-    TERMINOLOGY_ID=u'openehr'
-    GROUP_ID_ATTESTATION_REASON=u'attestation reason'
-    GROUP_ID_AUDIT_CHANGE_TYPE=u'audit change type'
-    GROUP_ID_COMPOSITION_CATEGORY=u'composition category'
-    GROUP_ID_EVENT_MATH_FUNCTION=u'event math function'
-    GROUP_ID_INSTRUCTION_STATES=u'instruction states'
-    GROUP_ID_INSTRUCTION_TRANSITIONS=u'instruction transitions'
-    GROUP_ID_NULL_FLAVOURS=u'null flavours'
-    GROUP_ID_PARTICIPATION_FUNCTION=u'participation function'
-    GROUP_ID_PARTICIPATION_MODE=u'participation mode'
-    GROUP_ID_PROPERTIES=u'property'
-    GROUP_ID_SETTING=u'setting'
-    GROUP_ID_SUBJECT_RELATIONSHIP=u'subject relationship'
-    GROUP_ID_TERM_MAPPING_PURPOSE=u'term mapping purpose'
-    GROUP_ID_VERSION_LIFECYCLE_STATE=u'version lifecycle state'
+    TERMINOLOGY_ID='openehr'
+    GROUP_ID_ATTESTATION_REASON='attestation reason'
+    GROUP_ID_AUDIT_CHANGE_TYPE='audit change type'
+    GROUP_ID_COMPOSITION_CATEGORY='composition category'
+    GROUP_ID_EVENT_MATH_FUNCTION='event math function'
+    GROUP_ID_INSTRUCTION_STATES='instruction states'
+    GROUP_ID_INSTRUCTION_TRANSITIONS='instruction transitions'
+    GROUP_ID_NULL_FLAVOURS='null flavours'
+    GROUP_ID_PARTICIPATION_FUNCTION='participation function'
+    GROUP_ID_PARTICIPATION_MODE='participation mode'
+    GROUP_ID_PROPERTIES='property'
+    GROUP_ID_SETTING='setting'
+    GROUP_ID_SUBJECT_RELATIONSHIP='subject relationship'
+    GROUP_ID_TERM_MAPPING_PURPOSE='term mapping purpose'
+    GROUP_ID_VERSION_LIFECYCLE_STATE='version lifecycle state'
 
 
     def valid_terminology_group_id(self, an_id):

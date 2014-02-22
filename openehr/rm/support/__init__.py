@@ -14,10 +14,10 @@
     Support Information Model Rev. 1.0.2
 """
 
-__author__ = u'Timothy Cook <timothywayne.cook@gmail.com>'
-__docformat__ = u'plaintext'
-__contributors__ = (u'Fabricio Ferracioli <fabricioferracioli@gmail.com>',
-    u'Sergio Miranda Freire <sergio@lampada.uerj.br>')
+__author__ = 'Timothy Cook <timothywayne.cook@gmail.com>'
+__docformat__ = 'plaintext'
+__contributors__ = ('Fabricio Ferracioli <fabricioferracioli@gmail.com>',
+    'Sergio Miranda Freire <sergio@lampada.uerj.br>')
 
 
 import calendar
