@@ -4,7 +4,10 @@
 import re
 import math
 import copy
-from mx.DateTime import DateTimeFrom, TimeFrom, DateFrom
+import datetime
+
+import openehr.rm.datatypes.quantity.iso8601_ as iso8601
+
 from openehr.rm.datatypes.quantity import (DvAbsoluteQuantity,
                                              DvAmount, DvQuantified)
 from openehr.rm.support import TimeDefinitions
@@ -34,10 +37,10 @@ class DvDuration(DvAmount,TimeDefinitions):
     def __init__(self,value_or_magnitude='',accuracy=DvAmount.UNKNOWN_ACCURACY_VALUE,
                       magnitude_status=None,accuracy_is_percent=False,normal_range=None,
                       other_reference_ranges=None,normal_status=None,**kwargs):
-        if kwargs.has_key('magnitude'):
+        if 'magnitude' in kwargs:
             value_or_magnitude = kwargs['magnitude']
-        if isinstance(value_or_magnitude,basestring):
-            self.value = unicode(value_or_magnitude)
+        if isinstance(value_or_magnitude,str):
+            self.value = value_or_magnitude
         elif isinstance(value_or_magnitude,float) or isinstance(value_or_magnitude,int):
             if value_or_magnitude < 0:
                 self.sign = '-'
@@ -268,9 +271,10 @@ class DvTemporal(DvAbsoluteQuantity):
     DV_DURATION.
     """
 
-    def __init__(self,magnitude,accuracy,normalRange,otherReferenceRanges,normalStatus,magnitudeStatus=None):
+    def __init__(self, magnitude=None, accuracy=None, normal_range=None, other_reference_ranges=None, normal_status=None, magnitude_status=None):
         self.magnitude = magnitude
-        DvAbsoluteQuantity.__init__(self,magnitude,accuracy,normalRange,otherReferenceRanges,normalStatus,magnitudeStatus)
+        DvAbsoluteQuantity.__init__(self, magnitude=magnitude, accuracy=accuracy, normal_range=normal_range,
+                other_reference_ranges=other_reference_ranges, normal_status=normal_status, magnitude_status=magnitude_status)
 
 
 class DvDate(DvTemporal):
@@ -280,30 +284,146 @@ class DvDate(DvTemporal):
     Used for recording dates in real world time. The partial form is used for
     approximate birth dates, dates of death, etc.
     """
+    _value_str = _value_list = None
+    DATE_REGEX = re.compile("""
+        (?P<year>[0-9]{4})
+        ((-(?P<monthdash>[0-9]{1,2}))|(?P<month>[0-9]{2}))?
+        ((-(?P<daydash>[0-9]{1,2}))|(?P<day>[0-9]{2}))?""", re.VERBOSE)
 
-    def __init__(self,value,magnitude,accuracy,normalRange,otherReferenceRanges,normalStatus):
+    @property
+    def value(self):
+        return self._value_str
+
+    @value.setter
+    def value(self, value):
+        if isinstance(value, DvDate):
+            self._value_str = value._value_str
+            self._value_list = value._value_list
+        elif type(value) == list:
+            if len(value) > 3 or len(value) < 1:
+                raise AttributeError('cannot create date from %s' % value)
+            for d in value:
+                if type(d) != int:
+                    raise AttributeError('cannot create date from %s' % value)
+            self._value_list = value.copy()
+            s = ['%04.4d' % value[0]]
+            if len(value) > 1:
+                s.append('%02.2d' % value[1])
+            if len(value) > 2:
+                s.append('%02.2d' % value[2])
+            self._value_str = '-'.join(s)
+
+            while len(value) < 3:
+                value = value + [1]
+                self._value_list = self._value_list + [None]
+            dt = datetime.date(*value)
+            self.magnitude = dt.toordinal()
+        elif isinstance(value, str):
+            m = self.DATE_REGEX.match(value)
+            if not m:
+                raise AttributeError('cannot create date from %s' % value)
+            try:
+                groups = m.groupdict()
+                year = groups.get("year")
+                year = int(year)
+                month = groups.get("month") or groups.get("monthdash")
+                if month:
+                    month = int(month)
+                day = groups.get("day") or groups.get("daydash")
+                if day:
+                    day = int(day)
+            except:
+                raise AttributeError('cannot create date from %s' % value)
+            self._value_list = [year, month, day]
+
+            try:
+                dt = datetime.date(*[year, month or 1, day or 1])
+            except:
+                raise AttributeError('Invalid ISO 8601 Date [%s]' % value)
+            self.magnitude = dt.toordinal()
+            self._value_str = value
+        elif value is None:
+            self._value_str = None
+            self.magnitude = None
+        else:
+            raise AttributeError('value must be a string')
+
+    def __init__(self, value, accuracy=None, normal_range=None, other_reference_ranges=None, normal_status=None):
+        """
+            Constructor can take:
+                DvDate
+                String in ISO8601 Format
+                List of integers
+        """
         self.value = value
-        dt1 = DateFrom(value)
-        dt2 = DateFrom('0000-01-01')
-        dtDiff = dt1 - dt2
-        magnitude = dtDiff.days
-
-        DvTemporal.__init__(self,magnitude,accuracy,normalRange,otherReferenceRanges,normalStatus)
+        magnitude = self.magnitude
+        DvTemporal.__init__(self, magnitude=magnitude, accuracy=accuracy, normal_range=normal_range, other_reference_ranges=other_reference_ranges, normal_status=normal_status)
 
 
-    def diff(self,other):
+    def diff(self, other):
         """
         Difference of two dates. 'other' must be a DvDate. Returns a DvDuration.
         """
-
+        if not isinstance(other, DvDate):
+            raise AttributeError('Cannot compare a DvDate and %s' % other)
         diffdays = self.magnitude - other.magnitude
-
         return DvDuration(diffdays)
 
-    def valueValid(self):
+    def valueValid(self, value):
         """validIso8601DateTime(value)"""
+        try:
+            dt = iso8601.parse_date(value)
+            return True
+        except:
+            return False
 
-        return DateTimeFrom(self.value) is not None
+    def __lt__(self, val):
+        if not isinstance(val, DvDate):
+            raise TypeError("Argument type must be DvDate")
+        return self.magnitude < val.magnitude
+
+    def __gt__(self, val):
+        if not isinstance(val, DvDate):
+            raise TypeError("Argument type must be DvDate")
+        return self.magnitude > val.magnitude
+
+    def __eq__(self, val):
+        if isinstance(val, DvDate):
+            return self.magnitude == val.magnitude
+        return False
+
+    def year(self):
+        if self._value_list:
+            return self._value_list[0] 
+        return -1
+
+    def month(self):
+        if self._value_list and len(self._value_list) > 1:
+            return self._value_list[1] or -1
+        return -1
+
+    def day(self):
+        if self._value_list and len(self._value_list) > 2:
+            return self._value_list[2] or -1
+        return -1
+
+    def is_partial(self):
+        if self._value_list and len(self._value_list) > 2:
+            return self._value_list[2] == None
+        return True
+
+    def __str__(self):
+        return self.value
+
+    def month_known(self):
+        if self._value_list and len(self._value_list) > 1:
+            return self._value_list[1] != None
+        return False
+
+    def day_known(self):
+        if self._value_list and len(self._value_list) > 2:
+            return self._value_list[2] != None
+        return False
 
 
 class DvDateTime(DvTemporal):
